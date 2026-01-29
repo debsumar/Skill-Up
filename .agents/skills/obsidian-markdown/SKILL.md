@@ -389,40 +389,90 @@ $\int_a^b$         Integral
 $\alpha, \beta$    Greek letters
 ```
 
-## Diagrams (Mermaid)
+## Diagrams (ASCII/Text-based)
 
-````markdown
-```mermaid
-graph TD
-    A[Start] --> B{Decision}
-    B -->|Yes| C[Do this]
-    B -->|No| D[Do that]
-    C --> E[End]
-    D --> E
+Use ASCII art diagrams instead of Mermaid for better VSCode compatibility.
+
+### Flowcharts
+
 ```
-````
-
-### Sequence Diagrams
-
-````markdown
-```mermaid
-sequenceDiagram
-    Alice->>Bob: Hello Bob
-    Bob-->>Alice: Hi Alice
+┌─────────┐
+│  Start  │
+└────┬────┘
+     │
+     ▼
+┌─────────┐     Yes    ┌──────────┐
+│Decision │───────────▶│ Do this  │
+└────┬────┘            └────┬─────┘
+     │ No                   │
+     ▼                      │
+┌──────────┐                │
+│ Do that  │                │
+└────┬─────┘                │
+     │                      │
+     └──────────┬───────────┘
+                ▼
+          ┌─────────┐
+          │   End   │
+          └─────────┘
 ```
-````
 
-### Linking in Diagrams
+### Tree Structures
 
-````markdown
-```mermaid
-graph TD
-    A[Biology]
-    B[Chemistry]
-    A --> B
-    class A,B internal-link;
 ```
-````
+Root
+├── Branch A
+│   ├── Leaf 1
+│   └── Leaf 2
+├── Branch B
+│   └── Leaf 3
+└── Branch C
+```
+
+### Sequence/Flow
+
+```
+[Alice] ──────▶ [Bob]
+         Hello
+[Alice] ◀────── [Bob]
+          Hi
+```
+
+### Hierarchy Diagrams
+
+```
+          ┌─────────────┐
+          │   Parent    │
+          └──────┬──────┘
+       ┌─────────┼─────────┐
+       ▼         ▼         ▼
+┌──────────┐ ┌──────────┐ ┌──────────┐
+│  Child A │ │  Child B │ │  Child C │
+└──────────┘ └──────────┘ └──────────┘
+```
+
+### Simple Arrows and Connectors
+
+```
+A ──▶ B ──▶ C
+      │
+      ▼
+      D
+
+A ───────┐
+         ▼
+B ──▶ C ──▶ D
+```
+
+### Box Drawing Characters Reference
+
+| Character | Description |
+|-----------|-------------|
+| `─` `│` | Horizontal/vertical lines |
+| `┌` `┐` `└` `┘` | Corners |
+| `├` `┤` `┬` `┴` `┼` | Junctions |
+| `▶` `◀` `▲` `▼` | Arrows |
+| `►` `◄` `▴` `▾` | Alternative arrows |
 
 ## Footnotes
 
@@ -583,11 +633,15 @@ def process_data(items):
 
 ## Architecture
 
-```mermaid
-graph LR
-    A[Input] --> B[Process]
-    B --> C[Output]
-    B --> D[Cache]
+```
+┌─────────┐     ┌─────────┐     ┌─────────┐
+│  Input  │────▶│ Process │────▶│ Output  │
+└─────────┘     └────┬────┘     └─────────┘
+                     │
+                     ▼
+                ┌─────────┐
+                │  Cache  │
+                └─────────┘
 ```
 
 ## Related Documents
@@ -608,6 +662,38 @@ Internal notes:
 - Consider alternative approaches
 %%
 ````
+
+## Question Generation
+
+When creating notes, generate 10 questions with answers to reinforce understanding of the topics covered.
+
+### Format
+
+```markdown
+## Questions & Answers
+
+> [!question]- Q1: What is [concept]?
+> **Answer:** 
+> [Detailed answer text here]
+
+> [!question]- Q2: How does [feature] work?
+> **Answer:** 
+> [Detailed answer text here]
+> 
+> Key points:
+> - Point 1
+> - Point 2
+```
+
+### Guidelines
+
+- Create questions that test key concepts from the note content
+- Mix question types: definition, application, comparison, and analysis
+- Use foldable callouts so answers are hidden by default
+- Put `**Answer:**` on its own line followed by the answer content
+- Use blank lines (`>`) within callouts for better readability
+- Include bullet points or code blocks in answers where relevant
+- Questions should progress from basic to more complex
 
 ## References
 
