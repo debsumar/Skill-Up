@@ -217,3 +217,26 @@ After Failover:
 > [!question]- Q5: Are Elastic IPs free if attached to a running instance?
 > **Answer:**
 > ==No==. Since February 2024, all Public IPv4 addresses (including Elastic IPs) cost ==$0.005/hour== whether attached or not. Always release unused Elastic IPs.
+
+> [!question]- Q6: What is the difference between IPv4 and IPv6 in AWS?
+> **Answer:**
+> ==IPv4== uses 4 numbers separated by dots (e.g., `192.168.1.1`) with ~3.7 billion addresses. ==IPv6== uses a longer hex format and is virtually unlimited. AWS supports both, but IPv4 is still the most common. IPv6 is mainly used for IoT.
+
+> [!question]- Q7: How do private machines connect to the internet?
+> **Answer:**
+> Machines on a private network connect to the internet through a ==NAT device== and an ==Internet Gateway== that acts as a proxy. The Internet Gateway provides a public-facing IP for outbound traffic.
+
+> [!question]- Q8: Can two different companies have the same private IP addresses?
+> **Answer:**
+> ==Yes==. Private IPs only need to be unique within their own private network. Two separate VPCs or companies can use identical private IP ranges (e.g., both using `10.0.1.10`) without conflict.
+
+> [!question]- Q9: What are the recommended alternatives to Elastic IPs?
+> **Answer:**
+> - Use a ==random public IP with a DNS name== (Route 53) — more scalable
+> - Use a ==Load Balancer== and avoid public IPs on instances entirely — best pattern for AWS
+> 
+> Both approaches are more scalable and cost-effective than Elastic IPs.
+
+> [!question]- Q10: What happens to an Elastic IP when you stop an instance it's attached to?
+> **Answer:**
+> The Elastic IP ==remains attached== to the stopped instance. The public IPv4 does not change. When you start the instance again, the same Elastic IP is still associated. You must ==disassociate and release== the Elastic IP manually to stop being charged.

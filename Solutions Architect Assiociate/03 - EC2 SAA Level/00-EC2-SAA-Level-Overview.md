@@ -95,6 +95,6 @@ Need lowest latency?
 
 ## Related Sections
 
-- [[../EC2 Fundamentals/00-EC2-Overview|EC2 Fundamentals]] - Basic EC2 concepts
-- [[../IAM & AWS CLI/IAM Fundamentals|IAM Fundamentals]] - IAM roles for EC2
+- [[../02 - EC2 Fundamentals/00-EC2-Overview|EC2 Fundamentals]] - Basic EC2 concepts
+- [[../01 - IAM & AWS CLI/IAM Fundamentals|IAM Fundamentals]] - IAM roles for EC2
 - EBS & EFS (next) - Storage for EC2

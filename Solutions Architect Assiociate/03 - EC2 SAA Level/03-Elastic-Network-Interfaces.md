@@ -225,3 +225,27 @@ aws ec2 delete-network-interface \
 > [!question]- Q5: Can an EC2 instance have multiple ENIs?
 > **Answer:**
 > ==Yes==. An instance can have multiple ENIs attached (eth0, eth1, eth2...). The number depends on instance type. Each ENI can have its own private IP, security groups, and can be in different subnets (within same AZ).
+
+> [!question]- Q6: What is the difference between a primary ENI (eth0) and a secondary ENI?
+> **Answer:**
+> The ==primary ENI (eth0)== is created automatically with the instance, cannot be detached, and is deleted when the instance terminates. ==Secondary ENIs== (eth1, eth2...) can be created independently, attached/detached freely, and persist after instance termination.
+
+> [!question]- Q7: What attributes can an ENI have?
+> **Answer:**
+> - Primary private IPv4 and one or more secondary private IPv4s
+> - One ==Elastic IP per private IPv4==
+> - One or more ==security groups==
+> - A ==MAC address==
+> - Source/destination check flag
+
+> [!question]- Q8: Does a manually created ENI cost money if left unattached?
+> **Answer:**
+> ==No==. An unattached ENI itself does not incur charges. However, any ==Elastic IP== associated with an unattached ENI will incur charges. The ENI is just a logical networking component.
+
+> [!question]- Q9: Why would you use a secondary ENI for license-bound software?
+> **Answer:**
+> Some software is licensed to a specific ==MAC address==. Since each ENI has its own MAC address, you can move the ENI (and its MAC) to a new instance if the original fails, ==preserving the software license== without re-activation.
+
+> [!question]- Q10: Can you attach security groups directly to an ENI?
+> **Answer:**
+> ==Yes==. Security groups are attached at the ==ENI level==, not the instance level. Each ENI can have different security groups, allowing you to have different network access rules per interface on the same instance.

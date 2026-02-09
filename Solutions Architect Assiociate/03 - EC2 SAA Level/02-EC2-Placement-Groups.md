@@ -242,3 +242,27 @@ aws ec2 create-placement-group \
 > [!question]- Q5: Can a Spread placement group span multiple Availability Zones?
 > **Answer:**
 > ==Yes==. Spread placement groups can span multiple AZs within a region. Each instance is placed on distinct hardware, and you can have up to 7 instances per AZ in the group.
+
+> [!question]- Q6: How many partitions can you have per AZ in a Partition placement group?
+> **Answer:**
+> Up to ==7 partitions per AZ==. Each partition represents a different hardware rack. You can scale to ==hundreds of EC2 instances== across all partitions, unlike Spread which limits to 7 instances per AZ.
+
+> [!question]- Q7: What does each partition represent in a Partition placement group?
+> **Answer:**
+> Each partition represents a ==separate hardware rack== in AWS. Instances within the same partition may share a rack, but instances in ==different partitions are guaranteed to be on different racks==, isolating failure domains.
+
+> [!question]- Q8: How can an EC2 instance know which partition it belongs to?
+> **Answer:**
+> Through the ==EC2 metadata service==. Instances can query their metadata to determine which partition they are placed in, allowing partition-aware applications (like HDFS, Cassandra) to distribute data accordingly.
+
+> [!question]- Q9: What is the Spread level option when creating a Spread placement group?
+> **Answer:**
+> You can set the spread level to:
+> - ==Rack== (default) — instances spread across different racks
+> - ==Host== — instances spread across different physical hosts (Outpost only)
+> 
+> For standard AWS usage, ==rack== is the correct choice.
+
+> [!question]- Q10: When would you choose Cluster over Partition placement group?
+> **Answer:**
+> Choose ==Cluster== when you need the ==absolute lowest latency and highest throughput== between instances (e.g., tightly-coupled HPC). Choose ==Partition== when you need ==scale + fault isolation== for distributed systems like Kafka or Hadoop that are partition-aware.

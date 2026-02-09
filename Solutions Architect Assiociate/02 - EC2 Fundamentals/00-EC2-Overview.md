@@ -101,6 +101,6 @@ HTTPS:          443
 
 ## Related Sections
 
-- [[../IAM & AWS CLI/IAM Fundamentals|IAM Fundamentals]] - IAM basics before EC2
+- [[../01 - IAM & AWS CLI/IAM Fundamentals|IAM Fundamentals]] - IAM basics before EC2
 - EBS & EFS (next section) - Storage for EC2
 - ELB & ASG (upcoming) - Load balancing and scaling

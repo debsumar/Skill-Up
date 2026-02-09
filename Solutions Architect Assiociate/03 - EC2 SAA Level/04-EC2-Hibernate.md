@@ -208,3 +208,35 @@ uptime
 > [!question]- Q5: Can you hibernate an instance with instance store root volume?
 > **Answer:**
 > ==No==. Hibernate requires an ==EBS root volume== because the RAM contents must be written to persistent storage. Instance store is ephemeral and would lose the RAM dump when stopped.
+
+> [!question]- Q6: What happens to the RAM data during the hibernate process?
+> **Answer:**
+> When you hibernate, the instance enters a ==stopping state== and the RAM contents are ==dumped to the root EBS volume==. The instance then stops and RAM is cleared. On start, the RAM dump is ==loaded back from EBS into memory==, restoring the exact previous state.
+
+> [!question]- Q7: What is the maximum duration an EC2 instance can remain hibernated?
+> **Answer:**
+> ==60 days==. After 60 days, the instance should be started or terminated. This limit may change over time, but it's the current restriction.
+
+> [!question]- Q8: Which instance purchase types support hibernate?
+> **Answer:**
+> Hibernate is available for:
+> - ==On-Demand== instances
+> - ==Reserved== instances
+> - ==Spot== instances
+> 
+> All three purchase types support hibernation.
+
+> [!question]- Q9: Why must the root EBS volume be encrypted for hibernate?
+> **Answer:**
+> Because the ==RAM contents are written to disk==, and RAM may contain sensitive data (passwords, keys, application state). ==Encryption ensures this data is protected at rest== on the EBS volume.
+
+> [!question]- Q10: What is the difference between stopping and hibernating an EC2 instance?
+> **Answer:**
+> 
+> | Aspect | Stop | Hibernate |
+> |--------|------|-----------|
+> | RAM | ==Lost== | ==Preserved== (dumped to EBS) |
+> | Boot | Full OS boot | ==Fast resume== |
+> | Processes | Terminated | ==Preserved== |
+> | `uptime` | Resets to 0 | ==Continues== |
+> | User Data | Runs again | Does not run |
