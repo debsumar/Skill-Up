@@ -27,9 +27,14 @@ tags:
 
 ### Free Tier (EC2 Only)
 
-| Service | Free Tier |
+| Account Created | Free Tier Instances | Duration |
+|----------------|-------------------|----------|
+| ==Before July 15, 2025== | t2.micro (or t3.micro where t2 unavailable) | 750 hours/month, first 12 months |
+| ==On or after July 15, 2025== | t3.micro, t3.small, t4g.micro, t4g.small, c7i-flex.large, m7i-flex.large | 6 months or until credits used |
+
+| Service | Free Tier for IPv4? |
 |---------|-----------|
-| EC2 | 750 hours/month (first 12 months) |
+| EC2 | ✅ See above |
 | ELB | ❌ No free tier |
 | RDS | ❌ No free tier |
 | Other services | ❌ No free tier |

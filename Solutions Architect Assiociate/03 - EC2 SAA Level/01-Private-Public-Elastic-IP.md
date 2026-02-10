@@ -122,7 +122,7 @@ After Start:
 | Ownership | You own it until you delete/release it |
 | Attachment | Can attach to ==one instance at a time== |
 | Portability | Can move between instances for failover |
-| Limit | ==5 per AWS account== (can request increase) |
+| Limit | ==5 per region== (can request increase) |
 | Cost | ==$0.005/hour== (~$3.60/month) whether used or not |
 
 ### Use Case: Failover
@@ -175,7 +175,7 @@ After Failover:
 
 ### Why Avoid Elastic IPs?
 
-1. **Limited**: Only 5 per account
+1. **Limited**: Only 5 per region
 2. **Cost**: Charged even when not attached
 3. **Not scalable**: One IP = one instance
 4. **Better patterns exist**: DNS, Load Balancers
@@ -210,7 +210,7 @@ After Failover:
 > 
 > However, better alternatives exist (DNS, Load Balancers).
 
-> [!question]- Q4: How many Elastic IPs can you have per AWS account?
+> [!question]- Q4: How many Elastic IPs can you have per region?
 > **Answer:**
 > ==5 Elastic IPs== per region by default. You can request an increase from AWS, but it's rare to need more. Consider using DNS or Load Balancers instead.
 

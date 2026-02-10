@@ -143,11 +143,17 @@ Storage Optimized
 
 ## Free Tier Instance
 
-> [!important] t2.micro
-> - **750 hours/month** for first 12 months
-> - 1 vCPU, 1 GB RAM
-> - EBS storage only
-> - If t2.micro unavailable in region, t3.micro is free tier eligible
+> [!important] Free Tier — Depends on Account Creation Date
+> **Accounts created ==before== July 15, 2025:**
+> - ==t2.micro== (or t3.micro where t2 unavailable)
+> - 750 hours/month for first 12 months
+> - 1 vCPU, 1 GB RAM, EBS storage only
+> - ⚠️ t3.micro defaults to Unlimited mode (may incur CPU burst charges)
+>
+> **Accounts created ==on or after== July 15, 2025:**
+> - ==t3.micro, t3.small, t4g.micro, t4g.small, c7i-flex.large, m7i-flex.large==
+> - Available for ==6 months== or until credits are used up
+> - Broader instance selection including Graviton (t4g) and Flex types
 
 ## Choosing the Right Instance Type
 
@@ -198,7 +204,6 @@ Decision Tree
 
 > [!question]- Q4: What's the free tier instance type?
 > **Answer:**
-> **t2.micro** (or t3.micro if t2 unavailable):
-> - 750 hours/month free
-> - 1 vCPU, 1 GB RAM
-> - First 12 months of AWS account
+> Depends on when your account was created:
+> - **Before July 15, 2025**: ==t2.micro== (or t3.micro if t2 unavailable) — 750 hours/month, first 12 months
+> - **On or after July 15, 2025**: ==t3.micro, t3.small, t4g.micro, t4g.small, c7i-flex.large, m7i-flex.large== — 6 months or until credits used up

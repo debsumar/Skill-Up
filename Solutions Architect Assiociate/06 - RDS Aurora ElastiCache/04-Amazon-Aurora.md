@@ -19,7 +19,7 @@ tags:
 |---------|--------|
 | **Compatibility** | MySQL and PostgreSQL drivers |
 | **Performance** | ==5x MySQL== on RDS, ==3x PostgreSQL== on RDS |
-| **Storage** | Auto-grows from ==10 GB to 128 TB== |
+| **Storage** | Auto-grows from ==10 GB to 128 TB== (==256 TiB== on newer versions) |
 | **Read Replicas** | Up to ==15== (sub 10ms replica lag) |
 | **Failover** | ==Instantaneous== (< 30 seconds avg) |
 | **High Availability** | ==Native== (cloud-native by default) |
@@ -70,7 +70,7 @@ Aurora stores ==6 copies== of your data across ==3 AZs==:
                      │               │
               ┌──────▼───────────────▼──────┐
               │   Shared Storage Volume     │
-              │   10 GB → 128 TB auto       │
+              │   10 GB → 128 TB auto (256 TiB on newer versions)  │
               └─────────────────────────────┘
 ```
 
@@ -109,7 +109,7 @@ Aurora stores ==6 copies== of your data across ==3 AZs==:
 
 > [!question]- Q3: How does Aurora storage work?
 > **Answer:**
-> Auto-grows from ==10 GB to 128 TB==. Stores ==6 copies== across ==3 AZs==. Uses hundreds of volumes with self-healing and peer-to-peer replication.
+> Auto-grows from ==10 GB to 128 TB== (==256 TiB== on newer Aurora versions like PostgreSQL 16.9+). Stores ==6 copies== across ==3 AZs==. Uses hundreds of volumes with self-healing and peer-to-peer replication.
 
 > [!question]- Q4: How many copies does Aurora need for writes and reads?
 > **Answer:**
