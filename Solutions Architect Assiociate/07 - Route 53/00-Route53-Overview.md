@@ -1,61 +1,34 @@
 ---
-title: Route 53 - Overview
+title: "Route 53 - Section Overview"
 date: 2026-02-10
 tags:
   - aws
   - route53
   - dns
   - saa-c03
-  - index
 ---
 
-# Route 53 - Overview
+# Route 53 - Section Overview
 
-## Study Files
+## Section Map
 
-| # | Topic | File | Priority |
-|---|-------|------|----------|
-| 1 | What is DNS? | [[01-What-is-DNS]] | 🟡 Medium |
-| 2 | Route 53 Overview | [[02-Route53-Overview]] | 🔴 High |
-| 3 | Records & TTL | [[03-Records-and-TTL]] | 🔴 High |
-| 4 | CNAME vs Alias | [[04-CNAME-vs-Alias]] | 🔴 High |
-| 5 | Routing Policies | [[05-Routing-Policies]] | 🔴 High |
-| 6 | Health Checks | [[06-Health-Checks]] | 🔴 High |
-| 7 | Advanced Routing Policies | [[07-Routing-Policies-Advanced]] | 🔴 High |
-| 8 | 3rd Party Domains | [[08-Third-Party-Domains]] | 🟡 Medium |
+This section covers Amazon Route 53 — AWS's managed DNS service. It starts with DNS fundamentals and builds up to advanced routing policies and health checks.
 
-## Quick Decision Tree
+| # | Topic | Key Concepts |
+|---|-------|-------------|
+| [[01-What-is-DNS\|01]] | What is DNS? | DNS hierarchy, FQDN, recursive resolution, TLD, SLD, name servers |
+| [[02-Route53-Overview\|02]] | Route 53 Overview | Hosted zones (public/private), record types (A, AAAA, CNAME, NS), domain registration, EC2 setup |
+| [[03-Records-and-TTL\|03]] | Records and TTL | Time To Live, caching behavior, high vs low TTL trade-offs |
+| [[04-CNAME-vs-Alias\|04]] | CNAME vs Alias | Zone apex restriction, Alias targets, free queries, health check support |
+| [[05-Routing-Policies\|05]] | Routing Policies | Simple, Weighted, Latency-based routing |
+| [[06-Health-Checks\|06]] | Health Checks & Failover | Endpoint checks, calculated checks, CloudWatch Alarm checks, Failover routing |
+| [[07-Routing-Policies-Advanced\|07]] | Advanced Routing Policies | Geolocation, Geoproximity (bias), IP-based, Multi-Value |
+| [[08-Third-Party-Domains\|08]] | Third-Party Domains | Domain registrar vs DNS service, using Route 53 with GoDaddy, section cleanup |
 
-```
-Which Routing Policy?
-├── Single resource, no health check?
-│   └── Simple
-├── Distribute traffic by percentage?
-│   └── Weighted
-├── Lowest latency for users?
-│   └── Latency
-├── Active-passive failover?
-│   └── Failover (requires health check)
-├── Route by user's country/continent?
-│   └── Geolocation
-├── Shift traffic between regions using bias?
-│   └── Geoproximity (requires Traffic Flow)
-├── Route by client IP (CIDR)?
-│   └── IP-based
-└── Multiple healthy resources returned?
-    └── Multi-Value (client-side LB)
-```
+## Key Exam Topics
 
-## Key Facts
-
-| Fact | Detail |
-|------|--------|
-| **Port** | 53 (traditional DNS port) |
-| **SLA** | ==100% availability== (only AWS service) |
-| **Cost** | $0.50/month per hosted zone + $12+/year domain |
-| **Alias queries** | ==Free== |
-
-## Related Sections
-
-- [[../06 - RDS Aurora ElastiCache/00-RDS-Aurora-ElastiCache-Overview|RDS Aurora ElastiCache]]
-- [[../05 - High Availability & Scalability ELB ASG/00-Overview|High Availability & Scalability]]
+- ==Alias vs CNAME== — zone apex, free queries, valid targets
+- ==Routing policies== — when to use each (Weighted for canary, Latency for performance, Geolocation for localization, Geoproximity for traffic shifting)
+- ==Health checks== — endpoint, calculated, CloudWatch Alarm (for private resources)
+- ==Failover routing== — primary/secondary, mandatory health check on primary
+- ==100% availability SLA== — only AWS service with this guarantee

@@ -1,92 +1,161 @@
 ---
-title: Route 53 Records & TTL
+title: "Route 53 - Records and TTL"
 date: 2026-02-10
 tags:
   - aws
   - route53
+  - dns
   - ttl
-  - dns-records
   - saa-c03
 ---
 
-# Route 53 Records & TTL
+# Route 53 - Records and TTL
 
-## TTL (Time To Live)
+## Overview
 
-TTL tells the client ==how long to cache== the DNS response before querying Route 53 again.
+==TTL (Time To Live)== is one of the most important concepts in DNS. It controls how long a DNS response is ==cached== by the client (browser, resolver) before it needs to ask Route 53 again. Understanding TTL is critical for the exam — it affects cost, performance, and how quickly DNS changes propagate.
+
+Every DNS record in Route 53 has a TTL value (except ==Alias records==, where TTL is set automatically by Route 53).
+
+## How TTL Works
 
 ```
-┌────────┐  DNS query   ┌──────────┐  A record + TTL 300s
-│ Client │───────────▶│ Route 53 │─────────────────▶
-└────────┘              └──────────┘
-    │
-    │  For 300 seconds: use cached IP
-    │  (no new DNS query needed)
-    ▼
-┌────────────┐
-│ Web Server │
-└────────────┘
+┌──────────┐   1. DNS Query:              ┌──────────────┐
+│          │   "myapp.example.com?"        │              │
+│  Client  │──────────────────────────────▶│   Route 53   │
+│          │◀──────────────────────────────│              │
+│          │   2. Response:                │              │
+│          │   A Record: 54.22.33.44      │              │
+│          │   ==TTL: 300 seconds==        │              │
+└────┬─────┘                               └──────────────┘
+     │
+     │  3. Client CACHES the result for 300 seconds
+     │
+     │  4. For the next 300 seconds, the client
+     │     does NOT query Route 53 again —
+     │     it uses the cached answer
+     │
+     │  5. After 300 seconds, the cache expires
+     │     and the client queries Route 53 again
+     ▼
+┌──────────────┐
+│  Web Server  │
+│  54.22.33.44 │
+└──────────────┘
 ```
+
+The TTL tells the client: =="Cache this result for X seconds. Don't ask me again until the cache expires."==
 
 ## High TTL vs Low TTL
 
-| | High TTL (e.g., 24 hours) | Low TTL (e.g., 60 seconds) |
-|---|---|---|
-| **DNS traffic** | ==Less== (fewer queries) | ==More== (more queries) |
-| **Cost** | ==Lower== | ==Higher== (pay per query) |
-| **Stale records** | ==Possible== (up to 24h outdated) | ==Unlikely== (quick updates) |
-| **Record changes** | ==Slow== to propagate | ==Fast== to propagate |
+| Aspect | High TTL (e.g., 24 hours) | Low TTL (e.g., 60 seconds) |
+|--------|--------------------------|---------------------------|
+| **DNS traffic** | ==Less== — clients cache longer, fewer queries | ==More== — clients query more often |
+| **Cost** | ==Cheaper== — fewer queries to Route 53 | ==More expensive== — more queries billed |
+| **Record change speed** | ==Slow== — clients keep old value for up to 24 hours | ==Fast== — clients get new value within 60 seconds |
+| **Outdated records** | ==Possible== — clients may have stale data | ==Unlikely== — clients refresh frequently |
+| **Use case** | Stable records that rarely change | Records that change frequently |
 
-> [!tip] Record Change Strategy
-> 1. ==Lower TTL== first (e.g., to 60s)
-> 2. Wait for old TTL to expire
-> 3. ==Change the record== value
-> 4. ==Raise TTL== back up
+> [!tip] TTL Strategy for Record Changes
+> When you need to change a DNS record, use this strategy:
+> 1. ==Lower the TTL== first (e.g., from 24 hours to 60 seconds)
+> 2. ==Wait== for the old TTL to expire (so all clients pick up the new low TTL)
+> 3. ==Change the record value==
+> 4. All clients will get the new value within 60 seconds
+> 5. ==Raise the TTL back== to the original value
+>
+> This minimizes the window where clients have stale data.
 
-> [!important] TTL is Mandatory
-> TTL is mandatory for ==every DNS record== except ==Alias records== (TTL set automatically by Route 53).
+## TTL in Action (Hands-On)
+
+The course demonstrates TTL with a practical example:
+
+1. Create an A record `demo.yourdomain.com` pointing to an EC2 instance in `eu-central-1` with ==TTL of 120 seconds==
+2. Verify with `dig` — the answer section shows the TTL countdown:
+   ```
+   ;; ANSWER SECTION:
+   demo.yourdomain.com.  115  IN  A  3.70.14.xxx
+   ```
+   The `115` means 115 seconds remain before the cache expires.
+3. Run `dig` again — the TTL has decreased (e.g., `98`)
+4. ==Change the record== to point to a different EC2 instance (e.g., `ap-southeast-1`)
+5. Run `dig` immediately — ==still shows the old IP== because the cache hasn't expired
+6. Wait for TTL to expire → run `dig` again → ==now shows the new IP==
+
+```
+Time 0s:    dig → IP: 3.70.14.xxx (eu-central-1)  TTL: 120
+Time 5s:    dig → IP: 3.70.14.xxx (eu-central-1)  TTL: 115
+Time 10s:   CHANGE RECORD to ap-southeast-1
+Time 15s:   dig → IP: 3.70.14.xxx (eu-central-1)  TTL: 105  ← STILL OLD!
+Time 66s:   dig → IP: 3.70.14.xxx (eu-central-1)  TTL: 54   ← STILL OLD!
+Time 120s:  CACHE EXPIRES
+Time 121s:  dig → IP: 13.212.xxx  (ap-southeast-1) TTL: 120  ← NEW IP! ✅
+```
+
+> [!warning] TTL Gotcha
+> Even after you change a record in Route 53, clients will ==continue using the old value== until their cached TTL expires. This is why lowering TTL before making changes is so important. If your TTL is 24 hours and you change a record, some clients won't see the change for up to 24 hours.
+
+## TTL and Alias Records
+
+==Alias records are the exception== — you cannot set TTL on alias records. Route 53 automatically sets the TTL based on the target resource. This is one of the advantages of alias records: AWS manages the TTL for optimal performance.
+
+## TTL Best Practices
+
+| Scenario | Recommended TTL | Why |
+|----------|----------------|-----|
+| **Stable production records** | ==3600-86400 seconds== (1-24 hours) | Reduces DNS query costs, records rarely change |
+| **Records you plan to change** | ==60-300 seconds== (1-5 minutes) | Allows quick propagation of changes |
+| **During a migration** | ==60 seconds== | Minimize stale data during cutover |
+| **After migration is complete** | ==Increase back to 3600+== | Reduce costs once stable |
 
 ## Questions & Answers
 
-> [!question]- Q1: What is TTL?
+> [!question]- Q1: What is TTL in DNS?
 > **Answer:**
-> ==Time To Live== — the duration (in seconds) that a DNS response is cached by the client before making a new query to Route 53.
+> TTL (Time To Live) is a value in seconds that tells the client ==how long to cache a DNS response==. During the TTL period, the client uses the cached answer without querying Route 53 again. After the TTL expires, the client makes a new DNS query to get the latest value.
 
-> [!question]- Q2: What happens during the TTL period if you change a record?
+> [!question]- Q2: What happens if you change a record while clients still have it cached?
 > **Answer:**
-> Clients will ==continue using the old cached value== until the TTL expires. Only after expiry will they query Route 53 and get the new value.
+> Clients will ==continue using the old cached value== until their TTL expires. They won't see the new record value until they make a fresh DNS query after the cache expires. This is why you should ==lower the TTL before making changes== to minimize the window of stale data.
 
-> [!question]- Q3: What is the tradeoff of a high TTL?
+> [!question]- Q3: What is the trade-off between high and low TTL?
 > **Answer:**
-> ==Less DNS traffic and lower cost==, but records can be ==outdated for longer== (up to the TTL duration).
+> - ==High TTL==: Less DNS traffic (cheaper), but changes propagate slowly and clients may have outdated records
+> - ==Low TTL==: More DNS traffic (more expensive), but changes propagate quickly and records are always fresh
+> Choose based on how often your records change and how critical freshness is.
 
-> [!question]- Q4: What is the tradeoff of a low TTL?
+> [!question]- Q4: What is the recommended strategy for changing a DNS record?
 > **Answer:**
-> ==Faster record propagation==, but ==more DNS traffic and higher cost== (Route 53 charges per query).
+> 1. ==Lower the TTL== (e.g., to 60 seconds) well in advance
+> 2. ==Wait== for the old TTL to expire (so all clients pick up the low TTL)
+> 3. ==Make the record change==
+> 4. Clients get the new value within 60 seconds
+> 5. ==Raise the TTL back== to the original value once the change is confirmed
 
-> [!question]- Q5: What is the recommended strategy for changing a DNS record?
+> [!question]- Q5: Can you set TTL on Alias records?
 > **Answer:**
-> 1. Lower the TTL first
-> 2. Wait for old TTL to expire
-> 3. Change the record value
-> 4. Raise TTL back up
+> ==No.== Alias records have their TTL set ==automatically by Route 53== based on the target resource. You cannot override it. This is one of the differences between Alias records and standard records (A, AAAA, CNAME).
 
-> [!question]- Q6: Which record type does NOT require a TTL?
+> [!question]- Q6: How does TTL affect Route 53 costs?
 > **Answer:**
-> ==Alias records==. Their TTL is set automatically by Route 53.
+> Route 53 charges per DNS query. With a ==high TTL==, clients cache longer and make fewer queries → ==lower cost==. With a ==low TTL==, clients query more frequently → ==higher cost==. For stable records, use a high TTL to minimize costs.
 
-> [!question]- Q7: Is TTL mandatory for A records?
+> [!question]- Q7: How can you observe TTL behavior?
 > **Answer:**
-> ==Yes==. TTL is mandatory for all records except Alias records.
+> Use the `dig` command. The answer section shows the ==remaining TTL== in seconds:
+> ```
+> demo.example.com.  98  IN  A  3.70.14.xxx
+> ```
+> The `98` means 98 seconds remain before the cache expires. Run `dig` again and the number decreases. When it reaches 0, a new query is made to Route 53.
 
-> [!question]- Q8: What does a TTL of 300 mean?
+> [!question]- Q8: Is TTL mandatory for all Route 53 records?
 > **Answer:**
-> The client will cache the DNS response for ==300 seconds (5 minutes)== before querying Route 53 again.
+> TTL is ==mandatory for every record type except Alias records==. For Alias records, Route 53 sets the TTL automatically. For all other records (A, AAAA, CNAME, etc.), you must specify a TTL value.
 
-> [!question]- Q9: Why does Route 53 charge more with low TTLs?
+> [!question]- Q9: What TTL should you use during a migration?
 > **Answer:**
-> Because Route 53 charges ==per DNS query==. Lower TTL means clients query more frequently, resulting in more billable requests.
+> During a migration, use a ==low TTL (60 seconds)== so that when you switch the record to the new target, all clients pick up the change within one minute. After the migration is confirmed and stable, ==increase the TTL back== to a higher value (e.g., 3600 seconds) to reduce costs.
 
-> [!question]- Q10: If TTL is 120 seconds and you change a record after 30 seconds, when do clients see the change?
+> [!question]- Q10: What is the default TTL in Route 53?
 > **Answer:**
-> After the remaining ==90 seconds== of the TTL expire. Clients use the cached value until TTL expires, then query Route 53 for the updated record.
+> The default TTL when creating a record in the Route 53 console is ==300 seconds (5 minutes)==. This is a reasonable default for most use cases — it balances cost (not too many queries) with freshness (changes propagate within 5 minutes).

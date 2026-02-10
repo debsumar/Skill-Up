@@ -113,7 +113,7 @@ This is a ==very common mistake== when scaling WordPress on AWS. EBS volumes are
                                                                 └─────────────────┘
 ```
 
-EFS (Elastic File System) is a ==Network File System (NFS)== that solves the shared storage problem. Here's how it works:
+EFS (Elastic File System) is a ==Network File System (NFS)== that solves the shared storage problem:
 
 1. EFS creates ==ENIs (Elastic Network Interfaces)== in each AZ — these are mount targets
 2. EC2 instances in each AZ connect to EFS through their local ENI
@@ -121,24 +121,21 @@ EFS (Elastic File System) is a ==Network File System (NFS)== that solves the sha
 4. Upload an image from Instance A → it's ==immediately visible== from Instance B, C, D, etc.
 5. Works across ==any number of instances== and ==any number of AZs==
 
-This is the key insight: EFS provides a ==single shared file system== that all your WordPress instances can mount, regardless of which AZ they're in.
-
 ## EBS vs EFS: The Complete Comparison
 
 | Feature | EBS | EFS |
 |---------|-----|-----|
 | **Scope** | ==Single AZ== | ==Multi-AZ== |
-| **Attachment** | One instance at a time (Multi-Attach only for io1/io2 in same AZ) | ==Unlimited instances== across AZs |
+| **Attachment** | One instance at a time | ==Unlimited instances== across AZs |
 | **Protocol** | Block storage (like a hard drive) | ==NFS== (Network File System) |
 | **Use Case** | Boot volumes, databases, single-instance apps | ==Shared storage== across instances |
 | **Scaling** | Manual resize (must modify volume) | ==Automatic== — grows and shrinks with usage |
 | **Cost** | ==Cheaper== per GB | More expensive per GB |
 | **Performance** | Very high (especially io1/io2) | Good, with burst capability |
 | **WordPress** | Works for ==single instance only== | ==Required for multi-instance== WordPress |
-| **Data loss risk** | If AZ goes down, data is in that AZ | Data replicated across AZs |
 
 > [!important] Cost vs Capability Trade-off
-> EFS is ==more expensive== than EBS per GB. But for multi-instance architectures like WordPress, it's ==necessary==. You can reduce EFS costs by using the ==EFS Infrequent Access (IA)== storage class for files that aren't accessed often (like old blog images). As a Solutions Architect, you need to understand this trade-off and be able to explain why the higher cost is justified.
+> EFS is ==more expensive== than EBS per GB. But for multi-instance architectures like WordPress, it's ==necessary==. You can reduce EFS costs by using the ==EFS Infrequent Access (IA)== storage class for files that aren't accessed often. As a Solutions Architect, you need to understand this trade-off.
 
 ### Can EBS Multi-Attach Replace EFS?
 
@@ -147,8 +144,6 @@ No. EBS Multi-Attach has severe limitations:
 - Only works within the ==same AZ== (defeats the purpose of Multi-AZ)
 - Requires a ==cluster-aware file system== (not standard Linux file systems)
 - Not designed for general shared storage
-
-EFS is the correct solution for shared file storage across instances and AZs.
 
 ## The Complete WordPress Architecture
 
@@ -183,11 +178,11 @@ The complete architecture has three storage layers:
 |----------|--------|-----|
 | **Database** | Aurora MySQL over RDS MySQL | Less ops, better scaling, 15 replicas, auto-scaling storage |
 | **Image Storage** | EFS over EBS | EBS is AZ-bound and not shared; EFS works across all instances and AZs |
-| **Cost** | EFS costs more than EBS | But it's ==required== for multi-instance WordPress — the capability justifies the cost |
+| **Cost** | EFS costs more than EBS | But it's ==required== for multi-instance WordPress |
 | **Availability** | Multi-AZ everything | Aurora Multi-AZ, EFS Multi-AZ, ELB Multi-AZ, ASG Multi-AZ |
 
 > [!note] Solutions Architect Responsibility
-> As a Solutions Architect, it's your job to understand ==why== you're making each decision and what the ==cost implications== are. You should be able to explain: "We chose EFS over EBS because EBS doesn't support shared access across AZs, which is required for our multi-instance WordPress deployment. The additional cost of EFS is justified by the ability to scale horizontally and maintain high availability."
+> As a Solutions Architect, it's your job to understand ==why== you're making each decision and what the ==cost implications== are. "We chose EFS over EBS because EBS doesn't support shared access across AZs, which is required for our multi-instance WordPress deployment."
 
 ## Questions & Answers
 
@@ -197,19 +192,17 @@ The complete architecture has three storage layers:
 
 > [!question]- Q2: How does EFS solve the shared storage problem?
 > **Answer:**
-> EFS is a ==Network File System (NFS)== that creates mount targets (ENIs) in each AZ. All EC2 instances mount the ==same file system== through their local ENI. When Instance A uploads an image, it's written to EFS and ==immediately visible== to Instance B, C, and any other instance — regardless of which AZ they're in. It's truly shared storage.
+> EFS is a ==Network File System (NFS)== that creates mount targets (ENIs) in each AZ. All EC2 instances mount the ==same file system== through their local ENI. When Instance A uploads an image, it's written to EFS and ==immediately visible== from Instance B, C, D, etc. — regardless of which AZ they're in.
 
 > [!question]- Q3: Why choose Aurora MySQL over standard RDS MySQL for WordPress?
 > **Answer:**
 > Aurora provides significant advantages for production WordPress:
 > - ==Less operational overhead== — AWS manages more infrastructure
-> - ==Built-in Multi-AZ== with automatic failover (no manual setup)
+> - ==Built-in Multi-AZ== with automatic failover
 > - ==Up to 15 read replicas== (vs 5 for standard RDS)
 > - ==Auto-scaling storage== — grows in 10 GB increments up to 128 TB
 > - ==5x MySQL throughput== — better performance
-> - ==Global databases== for international scaling
->
-> The trade-off is higher cost, but for production workloads, the reduced ops burden and better scaling are worth it.
+> The trade-off is higher cost, but for production workloads the reduced ops burden and better scaling are worth it.
 
 > [!question]- Q4: What is an ENI in the context of EFS?
 > **Answer:**
@@ -220,7 +213,7 @@ The complete architecture has three storage layers:
 > EBS is the right choice when:
 > - You have a ==single-instance== application (cheaper than EFS)
 > - You need ==boot volumes== for EC2 instances (EFS can't be a boot volume)
-> - You need ==high-performance block storage== (io1/io2 for databases like MySQL, PostgreSQL)
+> - You need ==high-performance block storage== (io1/io2 for databases)
 > - You don't need ==shared access== across instances
 > - Cost is a primary concern and you don't need multi-instance sharing
 
@@ -239,7 +232,6 @@ The complete architecture has three storage layers:
 > - Only works within the ==same AZ== (can't span AZs)
 > - Requires a ==cluster-aware file system== (not ext4 or xfs)
 > - Maximum ==16 instances== can attach simultaneously
->
 > EFS works across AZs with standard NFS, supports unlimited instances, and is much simpler to set up.
 
 > [!question]- Q8: What is the complete WordPress architecture on AWS?
@@ -257,9 +249,7 @@ The complete architecture has three storage layers:
 > [!question]- Q10: What are the key architectural decisions a Solutions Architect must make for WordPress on AWS?
 > **Answer:**
 > Three critical decisions, each with a cost vs. capability trade-off:
->
 > 1. ==Database==: RDS MySQL (cheaper, more manual) vs Aurora MySQL (more expensive, better scaling, less ops)
 > 2. ==File Storage==: EBS (cheaper, single-instance only) vs EFS (more expensive, required for multi-instance)
 > 3. ==Availability==: Single-AZ (cheaper, for dev/test) vs Multi-AZ (more expensive, required for production)
->
-> The exam tests your ability to ==justify these decisions== based on requirements. If the question says "highly available" and "scalable," you need Aurora + EFS + Multi-AZ.
+> The exam tests your ability to ==justify these decisions== based on requirements.
